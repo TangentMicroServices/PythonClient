@@ -28,7 +28,7 @@ class FetcherBase():
 					new_field = "{0}_{1}" . format (prefix, field)
 					entry[new_field] = entry_merge_data.get(field)
 			else:
-				print "Cannot find entry for {0}. Cannot find match for key: {1}:{2}" . format (prefix, merge_key, id)
+				print("Cannot find entry for {0}. Cannot find match for key: {1}:{2}" . format (prefix, merge_key, id))
 
 		return original_data
 
