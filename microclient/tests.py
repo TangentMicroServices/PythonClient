@@ -107,6 +107,14 @@ class ServiceBaseTestCase(unittest.TestCase):
             assert getattr(service, 'delete_someresource', None) is not None
             
 
+    def test_info(self):
+        """Test that info() runs without error"""
+
+        with patch.dict("microclient.clients.service_definitions", mock_service_definitions):
+            service = ServiceBase('FooService', 'token:123')
+            service.info("someresource")
+
+
     @patch.object(ServiceBase, 'call')
     def test_list(self, mock_call):
 
