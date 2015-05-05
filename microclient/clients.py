@@ -1,4 +1,5 @@
-import requests, json
+import requests
+import json
 
 """
 TODO: prefix (e.g.: /api/v1/) should not be hardcoded
@@ -7,7 +8,7 @@ TODO: prefix (e.g.: /api/v1/) should not be hardcoded
 service_definitions = {
 
     "ProjectService": {
-        #"base": settings.PROJECTSERVICE_BASE_URL,        
+        #"base": settings.PROJECTSERVICE_BASE_URL,
         "resources": {
             "project": {
                 "endpoint": "/projects/",
@@ -29,25 +30,25 @@ service_definitions = {
     "HoursService": {
         #"base": settings.HOURSSERVICE_BASE_URL,
         "resources": {
-        	"entry": {
-        		"endpoint": "/entry/",
-        		"required_params": [
-        			'user', 'project_id', 'project_task_id', 'day', 'hours', 'comments'
-        		],
-        		"optional_params": [
-        			'status', 'start_time', 'end_time', 'overtime', 'tags'
-        		]
-        	}
+            "entry": {
+                "endpoint": "/entry/",
+                "required_params": [
+                            'user', 'project_id', 'project_task_id', 'day', 'hours', 'comments'
+                ],
+                "optional_params": [
+                    'status', 'start_time', 'end_time', 'overtime', 'tags'
+                ]
+            }
         }
     },
     "UserService": {
         #"base": settings.USERSERVICE_BASE_URL,
         "resources": {
-        	"user": {
-        		"endpoint": "/users/",
-        		"required_params": [],
-        		"optional_params": []
-        	}
+            "user": {
+                "endpoint": "/users/",
+                "required_params": [],
+                "optional_params": []
+            }
         }
     }
 
@@ -61,12 +62,11 @@ class ServiceBase(object):
         self.token = token
         self.tld = tld
         self.protocol = protocol
-        #if token is None:
+        # if token is None:
         #    self.token = settings.TOKEN
 
         self.service_name = service_name
-        #self._make_api(service_name)
-
+        # self._make_api(service_name)
 
     def call(self, path, data={}, method="get"):
 
@@ -96,11 +96,11 @@ class ServiceBase(object):
             is_logged_in = True
         else:
             self.token = None
-        
+
         return (is_logged_in, self.token)
 
     def as_json(self, response):
-    	return json.loads(response.content)
+        return json.loads(response.content)
 
     def info(self, resource):
         '''
@@ -138,7 +138,7 @@ class ServiceBase(object):
         '''
         service_def, resource_def, path = self._get_service_information(
             resource)
-        
+
         update_path = "{0}{1}/" . format(path, resource_id)
         return self.call(update_path, data, 'patch')
 
@@ -153,9 +153,9 @@ class ServiceBase(object):
         return self.call(delete_path, "delete")
 
     def _make_api(self, service_name):
-    	'''
-    	not yet in use ..
-    	'''
+        '''
+        not yet in use ..
+        '''
 
         resources = [resource for resource, resource_details in
                      service_definitions.get(service_name, {}).get("resources", {}).items()]
@@ -193,8 +193,7 @@ class ServiceBase(object):
         return "{0}{1}" . format(self._get_base_url(), path)
 
     def _get_base_url(self):
-        return "{0}://{1}.{2}/api/v1" . format (self.protocol, self.service_name.lower(), self.tld)
-    	
+        return "{0}://{1}.{2}/api/v1" . format(self.protocol, self.service_name.lower(), self.tld)
 
     def _get_headers(self):
 
@@ -214,7 +213,8 @@ class ProjectService(ServiceBase):
 
     def __init__(self, token=None, tld="tangentmicroservices.com", protocol="http"):
 
-        super(ProjectService, self).__init__('ProjectService', token, tld, protocol)
+        super(ProjectService, self).__init__(
+            'ProjectService', token, tld, protocol)
 
     def get_projects(self):
         '''
@@ -223,10 +223,10 @@ class ProjectService(ServiceBase):
 
         return self.list("project")
 
-    def get_tasks(self):    
-    	'''
+    def get_tasks(self):
+        '''
         @DeprecationWarning("Rather just use: ProjectService.list('task') directly")
-        '''    
+        '''
         return self.list("task")
 
 
@@ -234,7 +234,8 @@ class HoursService(ServiceBase):
 
     def __init__(self, token=None, tld="tangentmicroservices.com", protocol="http"):
 
-        super(HoursService, self).__init__('HoursService', token, tld, protocol)
+        super(HoursService, self).__init__(
+            'HoursService', token, tld, protocol)
 
     def as_json(self, response):
         return json.loads(response.content)
@@ -266,9 +267,10 @@ class UserService(ServiceBase):
             "password": password,
         }
 
-        url = "{0}://{1}.{2}/api-token-auth/" . format (self.protocol, self.service_name.lower(), self.tld)
+        url = "{0}://{1}.{2}/api-token-auth/" . format(
+            self.protocol, self.service_name.lower(), self.tld)
         response = requests.post(url, data)
-        
+
         return response
 
     def get_users(self):

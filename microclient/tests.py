@@ -1,5 +1,6 @@
 from mock import patch
 import unittest, responses
+import pep8
 
 ##
 # Clients
@@ -20,6 +21,18 @@ mock_service_definitions = {
 		}
 	},	
 }
+
+
+class TestCodeFormat(unittest.TestCase):
+
+	@unittest.skip("Sheesh")
+    def test_pep8_conformance(self):
+        """Test that we conform to PEP8."""
+
+        pep8style = pep8.StyleGuide(quiet=True)
+        result = pep8style.check_files(['microclient/clients.py', 'microclient/fetchers.py'])
+        self.assertEqual(result.total_errors, 0,
+                         "Found code style errors (and warnings).")
 
 class ServiceBaseTestCase(unittest.TestCase):
 
