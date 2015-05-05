@@ -1,23 +1,25 @@
-from django.test import TestCase
-
 from microclient.fetchers import ProjectFetcher, EntryFetcher
 from microclient.clients import ProjectService, UserService, HoursService
-import json
+import json, unittest
 
-class ProjectServiceTestCase(TestCase):
+testing_tld = "staging.tangentmicroservices.com"
+testing_admin_username = "admin"
+testing_admin_password = "tangentsolutions"
+
+class ProjectServiceTestCase(unittest.TestCase):
 
 	def setUp(self):
-		self.service = ProjectService()
+		self.service = ProjectService(tld=testing_tld)
 
 	def test_get_projects(self):
 
 		projects = self.service.get_projects()		
 		assert projects.status_code == 200, 'Expect 200 OK'
 
-class HoursServiceTestCase(TestCase):
+class HoursServiceTestCase(unittest.TestCase):
 
 	def setUp(self):
-		self.service = HoursService()
+		self.service = HoursService(tld=testing_tld)
 
 		data={
 		    "user": 10,
@@ -78,18 +80,27 @@ class HoursServiceTestCase(TestCase):
 		assert entry_data.get("project_id") == 99, 'Expect project_id to be updated'
 		assert entry_data.get('comments') == "comment", 'Expect comment to be unchanged'
 
-class UserServiceTestCase(TestCase):
+class UserServiceTestCase(unittest.TestCase):
 
-	def setUp(self):
-		self.service = UserService()
+	def setUp(self):		
+		self.service = UserService(tld=testing_tld)
 
-	def test_get_projects(self):
+	def test_login(self):		
 
-		projects = self.service.get_users()		
-		assert projects.status_code == 200, 'Expect 200 OK'
+		assert self.service.token is None, 'Expect token to be none to start with'
+		response = self.service.login(username=testing_admin_username, password=testing_admin_password)
 
+		assert response.status_code == 200, 'Expect 200 OK'
+		assert self.service.token is not None, 'Token should be set'
 
-class EntryFetcherTestCase(TestCase):
+	"""
+	def test_get_users(self):
+
+		users = self.service.get_users()		
+		assert users.status_code == 200, 'Expect 200 OK'
+	"""
+
+class EntryFetcherTestCase(unittest.TestCase):
 
 	def setUp(self):
 		self.fetcher = EntryFetcher()
@@ -113,14 +124,14 @@ class EntryFetcherTestCase(TestCase):
 			assert entry.get(field, None) is not None, \
 				'Expect field to be added to data'
 
-class ProjectFetcherTestCase(TestCase):
+class ProjectFetcherTestCase(unittest.TestCase):
 
 	def setUp(self):
 		self.fetcher = ProjectFetcher()
 
-	'''
+	
 	@unittest.skip("Not working for nested items yet")
 	def test_get_projects(self):
 		projects = self.fetcher.get_projects()		
 		print projects
-	'''
+	

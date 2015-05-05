@@ -1,9 +1,5 @@
-from django.test import TestCase
-from django.conf import settings
-from django.forms import ValidationError
 from mock import patch
-import unittest
-
+import unittest, responses
 
 ##
 # Clients
@@ -22,30 +18,37 @@ mock_service_definitions = {
 			}, 
 			"someotherresource": {}
 		}
-	},
-	
+	},	
 }
 
-class ServiceBaseTestCase(TestCase):
+class ServiceBaseTestCase(unittest.TestCase):
 
 	def setUp(self):
 		pass 
 
 	def test_init_specifying_all_args(self):
 
-		service = ServiceBase('SomeService', 'token:123')
+		service = ServiceBase('SomeService', 'token:123', tld='example.com', protocol='https')
 
 		assert service.service_name == 'SomeService'
 		assert service.token == 'token:123'
+		assert service.tld == 'example.com'
+		assert service.protocol == 'https'
 
-	def test_init_with_defaults(self):
+	def test__get_base_url(self):
 
-		setattr(settings, 'TOKEN', 'settings_token')
-		service = ServiceBase('SomeService')
+		service = ServiceBase('SomeService', 'token:123', tld='example.com')
+		url = service._get_base_url()
 
-		assert service.token == 'settings_token', \
-			'Expect TOKEN to be set from settings.py if not explicitly passed in'
+		assert url == 'http://someservice.example.com/api/v1'
 
+	def test__get_url(self):
+		
+		service = ServiceBase('SomeService', 'token:123', tld='example.com')
+		url = service._get_url('/path/to/somewhere/')
+
+		assert url == 'http://someservice.example.com/api/v1/path/to/somewhere/'
+	
 	@unittest.skip("Not yet in use, can't work out how to magically pass the resource in")
 	def test_init_creates_fluent_methods(self):
 
@@ -93,7 +96,7 @@ class ServiceBaseTestCase(TestCase):
 
 		with patch.dict("microclient.clients.service_definitions", mock_service_definitions):
 			service = ServiceBase('FooService', 'token:123')
-			with self.assertRaises(ValidationError) as cm:
+			with self.assertRaises(ValueError) as cm:
 				service.create("someresource", mock_data)
 
 	@patch.object(ServiceBase, 'call')
@@ -117,7 +120,7 @@ class ServiceBaseTestCase(TestCase):
 		mock_call.assert_called_with('/someresource/1/', 'delete')
 		
 
-class ProjectServiceTestCase(TestCase):
+class ProjectServiceTestCase(unittest.TestCase):
 
 	def setUp(self):
 		self.service = ProjectService()
@@ -127,10 +130,8 @@ class ProjectServiceTestCase(TestCase):
 		assert self.service.service_name == 'ProjectService', \
 			'Expect service_name to be properly setup'
 
-		assert getattr(self.service, 'token', None) is not None, \
-			'Expect token to be set'
-
-class HoursServiceTestCase(TestCase):
+		
+class HoursServiceTestCase(unittest.TestCase):
 
 	def setUp(self):
 		self.service = HoursService()
@@ -140,29 +141,37 @@ class HoursServiceTestCase(TestCase):
 		assert self.service.service_name == 'HoursService', \
 			'Expect service_name to be properly setup'
 
-		assert getattr(self.service, 'token', None) is not None, \
-			'Expect token to be set'
-
-class UserServiceTestCase(TestCase):
+		
+class UserServiceTestCase(unittest.TestCase):
 
 	def setUp(self):
-		self.service = UserService()
+		self.service = UserService(tld="example.com")
 
 	def test_userservice_init(self):
 
 		assert self.service.service_name == 'UserService', \
 			'Expect service_name to be properly setup'
 
-		assert getattr(self.service, 'token', None) is not None, \
-			'Expect token to be set'
+	@responses.activate
+	def test_userservice_login(self):
 
+		expected_url = "http://userservice.example.com/api-token-auth/"
+
+		responses.add(responses.POST, expected_url,
+                  body='{"token": "123"}', status=200,
+                  content_type='application/json')
+
+		response = self.service.login(username="test", password="test")
+
+		assert self.service.token == '123', \
+			'Expect the token to be set to the value returned from the server'		
 
 ##
 # Fetchers
 ##
 from microclient.fetchers import ProjectFetcher, FetcherBase
 
-class BaseFetcherTestCase(TestCase):
+class BaseFetcherTestCase(unittest.TestCase):
 
 	def setUp(self):
 		self.fetcher = FetcherBase()
@@ -182,7 +191,7 @@ class BaseFetcherTestCase(TestCase):
 
 
 
-class ProjectFetcherTestCase(TestCase):
+class ProjectFetcherTestCase(unittest.TestCase):
 
 	def setUp(self):
 		pass 

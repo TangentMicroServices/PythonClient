@@ -1,0 +1,18 @@
+# -*- coding: utf-8 -*-
+from distutils.core import setup
+
+with open('requirements.txt') as f:
+    required = f.read().splitlines()
+
+setup(
+    name='microclient',
+    version='0.0.1',
+    author=u'Tangent Solutions',
+    packages=['microclient'],
+    include_package_data=True,
+    install_requires=required,
+    url='https://github.com/TangentMicroServices/PythonClient',
+    license='MIT licence, see LICENCE',
+    description='A Python client for interacting with Tangent MicroServices',
+    long_description=open('README.md').read(),
+)

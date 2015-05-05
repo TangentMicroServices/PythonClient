@@ -1,12 +1,13 @@
-from django.conf import settings
-from django.forms import ValidationError
-import requests
-import json
+import requests, json
+
+"""
+TODO: prefix (e.g.: /api/v1/) should not be hardcoded
+"""
 
 service_definitions = {
 
     "ProjectService": {
-        "base": settings.PROJECTSERVICE_BASE_URL,
+        #"base": settings.PROJECTSERVICE_BASE_URL,        
         "resources": {
             "project": {
                 "endpoint": "/projects/",
@@ -21,7 +22,7 @@ service_definitions = {
         }
     },
     "HoursService": {
-        "base": settings.HOURSSERVICE_BASE_URL,
+        #"base": settings.HOURSSERVICE_BASE_URL,
         "resources": {
         	"entry": {
         		"endpoint": "/entry/",
@@ -35,7 +36,7 @@ service_definitions = {
         }
     },
     "UserService": {
-        "base": settings.USERSERVICE_BASE_URL,
+        #"base": settings.USERSERVICE_BASE_URL,
         "resources": {
         	"user": {
         		"endpoint": "/users/",
@@ -50,25 +51,21 @@ service_definitions = {
 
 class ServiceBase(object):
 
-    service_lookup = {
-        "ProjectService": settings.PROJECTSERVICE_BASE_URL,
-        "HoursService": settings.HOURSSERVICE_BASE_URL,
-        "UserService": settings.USERSERVICE_BASE_URL
-    }
-
-    def __init__(self, service_name, token=None):
+    def __init__(self, service_name, token=None, tld="tangentmicroservices.com", protocol="http"):
 
         self.token = token
-        if token is None:
-            self.token = settings.TOKEN
+        self.tld = tld
+        self.protocol = protocol
+        #if token is None:
+        #    self.token = settings.TOKEN
 
         self.service_name = service_name
         #self._make_api(service_name)
 
+
     def call(self, path, data={}, method="get"):
 
-        base_url = self._get_base_url()
-        url = "{0}{1}" .format(base_url, path)
+        url = self._get_url(path)
 
         headers = {
             'content-type': 'application/json',
@@ -163,7 +160,7 @@ class ServiceBase(object):
                 required_params_string = (", ").join(required_params)
                 err_message = "{0} is a required parameter for create on {1}. Required parameters are: {2}"\
                     . format(param, resource, required_params_string)
-                raise ValidationError(err_message)
+                raise ValueError(err_message)
 
     def _get_service_information(self, resource):
         service_def = service_definitions.get(self.service_name)
@@ -171,9 +168,12 @@ class ServiceBase(object):
         path = resource_def.get("endpoint")
         return service_def, resource_def, path
 
+    def _get_url(self, path):
+        return "{0}{1}" . format(self._get_base_url(), path)
+
     def _get_base_url(self):
-    	return service_definitions.get(self.service_name, {}).get("base")
-        
+        return "{0}://{1}.{2}/api/v1" . format (self.protocol, self.service_name.lower(), self.tld)
+    	
 
     def _get_headers(self):
 
@@ -191,9 +191,9 @@ class ServiceBase(object):
 
 class ProjectService(ServiceBase):
 
-    def __init__(self):
+    def __init__(self, token=None, tld="tangentmicroservices.com", protocol="http"):
 
-        super(ProjectService, self).__init__('ProjectService')
+        super(ProjectService, self).__init__('ProjectService', token, tld, protocol)
 
     def get_projects(self):
         '''
@@ -211,9 +211,9 @@ class ProjectService(ServiceBase):
 
 class HoursService(ServiceBase):
 
-    def __init__(self):
+    def __init__(self, token=None, tld="tangentmicroservices.com", protocol="http"):
 
-        super(HoursService, self).__init__('HoursService')
+        super(HoursService, self).__init__('HoursService', token, tld, protocol)
 
     def as_json(self, response):
         return json.loads(response.content)
@@ -231,13 +231,28 @@ class HoursService(ServiceBase):
     def get_overview(self):
         return self.call(self.service_name, '/entry/overview/')
 
-    
 
 class UserService(ServiceBase):
 
-    def __init__(self):
+    def __init__(self, token=None, tld="tangentmicroservices.com", protocol="http"):
 
-        super(UserService, self).__init__('UserService')
+        super(UserService, self).__init__('UserService', token, tld, protocol)
+
+    def login(self, username, password):
+
+        data = {
+            "username": username,
+            "password": password,
+        }
+
+        url = "{0}://{1}.{2}/api-token-auth/" . format (self.protocol, self.service_name.lower(), self.tld)
+
+        response = requests.post(url, data)
+
+        if response.status_code == 200:
+            self.token = response.json().get("token")
+
+        return response
 
     def get_users(self):
         return self.list('user')

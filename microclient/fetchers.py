@@ -1,7 +1,6 @@
 from microclient.clients import ServiceBase
 import json
 from datetime import datetime
-from django.db.models import Max
 from microclient.clients import ProjectService, HoursService, UserService
 
 
