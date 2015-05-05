@@ -1,22 +1,101 @@
 from microclient.fetchers import ProjectFetcher, EntryFetcher
 from microclient.clients import ProjectService, UserService, HoursService
-import json, unittest
+import json, unittest, uuid
 
 testing_tld = "staging.tangentmicroservices.com"
 testing_admin_username = "admin"
 testing_admin_password = "tangentsolutions"
 
+
+def do_crud(service, resource, data):
+	# create:
+	response = service.create(resource, data)
+	resource_id = response.json().get("id", None)
+	if resource_id is None:
+		resource_id = response.json().get("pk", None)
+
+	assert response.status_code == 201, '{0} Expect 201 created' . format (resource)
+
+	# get		
+	response = service.get(resource, resource_id)
+	assert response.status_code == 200, '{0} Expect 200 OK' . format (resource)
+
+	# delete:
+	response = service.delete(resource, resource_id)		
+	assert response.status_code == 204, '{0} Expect 204 DELETED' . format (resource)
+
+	response = service.get(resource, resource_id)
+	assert response.status_code == 404, '{0} Expect 404 not found - item deleted' . format (resource)
+
+
 class ProjectServiceTestCase(unittest.TestCase):
 
 	def setUp(self):
 		self.service = ProjectService(tld=testing_tld)
+		
 		response = self.service.authenticate(username=testing_admin_username, password=testing_admin_password)
 		self.service.login(response)
+
+		self.user_service = UserService(tld=testing_tld)
+		response = self.user_service.authenticate(username=testing_admin_username, password=testing_admin_password)
+		self.user_service.login(response)
+
+		# create a project:
+		project_data = {
+			"title": "Test project",
+			"description": "lorum ipsum",
+			"start_date": "2015-04-24",
+		}
+		self.project = self.service.create("project", project_data)		
+		self.project_id = self.project.json().get("pk")
+
+		# create a 
+		user_data = {
+			"username": str(uuid.uuid4()).split("-")[0],
+			"first_name": "joe",
+			"last_name": "soap",
+		}
+		self.user = self.user_service.create("user", user_data)
+		self.user_id = self.user.json().get("id")
+
+
+	def tearDown(self):
+
+		self.service.delete("project", self.project_id)
+		self.user_service.delete("user", self.user_id)
 
 	def test_get_projects(self):
 
 		projects = self.service.get_projects()		
 		assert projects.status_code == 200, 'Expect 200 OK'
+
+	def test_crud_project(self):
+		"""
+		TODO: refactor into do_crud
+		"""
+
+		project_data = {
+			"title": "Test project",
+			"description": "lorum ipsum",
+			"start_date": "2015-04-24",
+		}
+
+		do_crud(self.service, "project", project_data)
+
+	def test_crud_resource(self):
+		"""
+		TODO: refactor into do_crud
+		"""
+
+		data = {
+			"user": self.user_id,
+			"start_date": "2015-04-24",
+			"rate": 200,
+			"agreed_hours_per_month": 0.00,
+			"project": self.project_id
+		}
+
+		do_crud(self.service, "resource", data)
 
 	
 class HoursServiceTestCase(unittest.TestCase):
@@ -72,6 +151,7 @@ class HoursServiceTestCase(unittest.TestCase):
 
 		assert entry.status_code == 201, 'Expect 201 CREATE OK'
 		assert self.create_id is not None, 'Entry Id is not None'
+
 
 	def test_update_entry(self):
 

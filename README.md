@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/TangentMicroServices/PythonClient.svg?branch=master)](https://travis-ci.org/TangentMicroServices/PythonClient)
+[![Code Climate](https://codeclimate.com/github/TangentMicroServices/PythonClient/badges/gpa.svg)](https://codeclimate.com/github/TangentMicroServices/PythonClient)
 
 
 # PythonClient

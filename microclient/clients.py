@@ -12,7 +12,7 @@ service_definitions = {
         "resources": {
             "project": {
                 "endpoint": "/projects/",
-                "required_params": [],
+                "required_params": ["title", "description", "start_date"],
                 "optional_params": [],
             },
             "task": {
@@ -22,8 +22,12 @@ service_definitions = {
             },
             "resource": {
                 "endpoint": "/resources/",
-                "required_params": [],
-                "optional_params": [],
+                "required_params": [
+                    "user", "start_date", "rate", "project"
+                ],
+                "optional_params": [
+                    "end_date", "agreed_hours_per_month",
+                ],
             }
         }
     },
@@ -33,7 +37,7 @@ service_definitions = {
             "entry": {
                 "endpoint": "/entry/",
                 "required_params": [
-                            'user', 'project_id', 'project_task_id', 'day', 'hours', 'comments'
+                    'user', 'project_id', 'project_task_id', 'day', 'hours', 'comments'
                 ],
                 "optional_params": [
                     'status', 'start_time', 'end_time', 'overtime', 'tags'
@@ -81,6 +85,7 @@ class ServiceBase(object):
             })
 
         http_method = getattr(requests, method)
+
         return http_method(url, data=json.dumps(data), headers=headers)
 
     def authenticate(self, username, password):
@@ -159,7 +164,7 @@ class ServiceBase(object):
         service_def, resource_def, path = self._get_service_information(
             resource)
         delete_path = "{0}{1}/" . format(path, resource_id)
-        return self.call(delete_path, "delete")
+        return self.call(delete_path, method="delete")
 
     def _make_api(self, service_name):
         '''
