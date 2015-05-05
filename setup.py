@@ -6,10 +6,10 @@ with open('requirements.txt') as f:
 
 setup(
     name='microclient',
-    version='0.0.1',
+    version='0.0.2',
     author=u'Tangent Solutions',
+    author_email='admin@tangentsolutions.co.za',
     packages=['microclient'],
-    include_package_data=True,
     install_requires=required,
     url='https://github.com/TangentMicroServices/PythonClient',
     license='MIT licence, see LICENCE',

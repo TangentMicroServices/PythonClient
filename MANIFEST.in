@@ -1,2 +1,2 @@
-include README.md LICENCE
-recursive-include *.py
+include README.md LICENCE requirements.txt
+recursive-include microclient *.py

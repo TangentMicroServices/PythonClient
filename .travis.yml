@@ -1,0 +1,15 @@
+language: python
+python:
+- '2.7'
+- '3.3'
+- pypy
+install: "pip install -r requirements.txt"
+script: nosetests
+deploy:
+  provider: pypi
+  user: toast38coza
+  password:
+    secure: dAOgWGJiGo6zINbUyO3dpoc5Z0ph7EI438trY9JbkKMUTDxVZT6SuzZZ6S93ytkeJr+CI9LyXni+G0803KUPxj3LvNxIDH1qI20wG+w+H5x31HYC+TqdJHE9QcJWeSySM+Bp7F2Eeb9HR8k6AI4FUjgGLGE09Ik67QsevFGwSig=
+  on:
+    tags: true
+    repo: TangentMicroServices/PythonClient
