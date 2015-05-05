@@ -78,6 +78,19 @@ class ServiceBase(object):
         http_method = getattr(requests, method)
         return http_method(url, data=json.dumps(data), headers=headers)
 
+    def authenticate(self, username, password):
+        userservice = UserService(tld=self.tld, protocol=self.protocol)
+        return userservice.login(username, password)
+
+    def login(self, userservice_response):
+
+        if userservice_response.status_code == 200:
+            self.token = userservice_response.json().get("token")
+            return True
+        else:
+            self.token = None
+            return False
+
     def as_json(self, response):
     	return json.loads(response.content)
 
@@ -238,7 +251,7 @@ class UserService(ServiceBase):
 
         super(UserService, self).__init__('UserService', token, tld, protocol)
 
-    def login(self, username, password):
+    def authenticate(self, username, password):
 
         data = {
             "username": username,
@@ -246,12 +259,8 @@ class UserService(ServiceBase):
         }
 
         url = "{0}://{1}.{2}/api-token-auth/" . format (self.protocol, self.service_name.lower(), self.tld)
-
         response = requests.post(url, data)
-
-        if response.status_code == 200:
-            self.token = response.json().get("token")
-
+        
         return response
 
     def get_users(self):

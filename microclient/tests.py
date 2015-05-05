@@ -48,6 +48,37 @@ class ServiceBaseTestCase(unittest.TestCase):
 		url = service._get_url('/path/to/somewhere/')
 
 		assert url == 'http://someservice.example.com/api/v1/path/to/somewhere/'
+
+	def test_login(self):
+
+		class MockResponse:
+			status_code = 200
+			def json(self):
+				return {
+					"token": "123"
+				}
+
+		service = ServiceBase('SomeService', tld='example.com')
+		response = service.login(MockResponse())
+
+		assert response == True, 'Expect response to be true'
+		assert service.token == "123"
+
+	def test_login_failure(self):
+
+		class MockResponse:
+			status_code = 405
+			def json(self):
+				return {
+					"token": "123"
+				}
+
+		service = ServiceBase('SomeService', tld='example.com')
+		response = service.login(MockResponse())
+
+		assert service.token == None, 'Clear the token if login fails'
+		assert response == False, 'Not logged in'
+
 	
 	@unittest.skip("Not yet in use, can't work out how to magically pass the resource in")
 	def test_init_creates_fluent_methods(self):
@@ -153,7 +184,7 @@ class UserServiceTestCase(unittest.TestCase):
 			'Expect service_name to be properly setup'
 
 	@responses.activate
-	def test_userservice_login(self):
+	def test_userservice_authenticate(self):
 
 		expected_url = "http://userservice.example.com/api-token-auth/"
 
@@ -161,10 +192,9 @@ class UserServiceTestCase(unittest.TestCase):
                   body='{"token": "123"}', status=200,
                   content_type='application/json')
 
-		response = self.service.login(username="test", password="test")
+		response = self.service.authenticate(username="test", password="test")
 
-		assert self.service.token == '123', \
-			'Expect the token to be set to the value returned from the server'		
+		assert response.status_code == 200
 
 ##
 # Fetchers

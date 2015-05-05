@@ -16,6 +16,14 @@ class ProjectServiceTestCase(unittest.TestCase):
 		projects = self.service.get_projects()		
 		assert projects.status_code == 200, 'Expect 200 OK'
 
+	def test_login(self):		
+
+		assert self.service.token is None, 'Expect token to be none to start with'
+		response = self.service.login(username=testing_admin_username, password=testing_admin_password)
+		
+		assert response.status_code == 200, 'Expect 200 OK'
+		assert self.service.token is not None, 'Token should be set'
+
 class HoursServiceTestCase(unittest.TestCase):
 
 	def setUp(self):
