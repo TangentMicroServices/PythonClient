@@ -162,6 +162,12 @@ class ProjectServiceTestCase(unittest.TestCase):
 		assert self.service.service_name == 'ProjectService', \
 			'Expect service_name to be properly setup'
 
+	@patch.object(ServiceBase, 'call')
+	def test_get_project_resources(self, mock_call):
+
+		self.service.get("resource", 1)
+		mock_call.assert_called_with('/resources/1/')
+
 		
 class HoursServiceTestCase(unittest.TestCase):
 

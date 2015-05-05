@@ -18,6 +18,11 @@ service_definitions = {
                 "endpoint": "/tasks/",
                 "required_params": [],
                 "optional_params": [],
+            },
+            "resource": {
+                "endpoint": "/resources/",
+                "required_params": [],
+                "optional_params": [],
             }
         }
     },

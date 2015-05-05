@@ -9,6 +9,19 @@ A python client for interacting with the MicroServices
 	pip install microclient 
 
 
+# Developing/Contributing
+
+Target Pythons is: 2.7, 3.4
+
+## Setup
+
+	#clone the repo:
+	git@github.com:TangentMicroServices/PythonClient.git
+
+	virtualenv env
+	# use virtualenv-3.4 fr python 3
+
+
 ## Testing
 
 **run the unit tests**
