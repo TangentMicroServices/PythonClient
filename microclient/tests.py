@@ -170,7 +170,7 @@ class ServiceBaseTestCase(unittest.TestCase):
             service = ServiceBase('FooService', 'token:123')
             service.delete("someresource", 1)
 
-        mock_call.assert_called_with('/someresource/1/', 'delete')
+        mock_call.assert_called_with('/someresource/1/', method='delete')
         
 
 class ProjectServiceTestCase(unittest.TestCase):
