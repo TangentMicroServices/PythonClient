@@ -21,20 +21,23 @@ class FetcherBase():
 		for entry in original_data:
 
 			id = entry.get(original_key)
-			merge_data = lookup.get(id)
+			entry_merge_data = lookup.get(id)
 
-			for field in merge_fields:
-				new_field = "{0}_{1}" . format (prefix, field)
-				entry[new_field] = merge_data.get(field)
+			if entry_merge_data is not None:
+				for field in merge_fields:
+					new_field = "{0}_{1}" . format (prefix, field)
+					entry[new_field] = entry_merge_data.get(field)
+			else:
+				print "Cannot find entry for {0}. Cannot find match for key: {1}:{2}" . format (prefix, merge_key, id)
 
 		return original_data
 
 
 class ProjectFetcher(FetcherBase):
 
-	def __init__(self):
-		self.project_service = ProjectService()
-		self.user_service = UserService()
+	def __init__(self, token, tld="tangentmicroservices.com", protocol="http"):
+		self.project_service = ProjectService(token, tld, protocol)
+		self.user_service = UserService(token, tld, protocol)
 		
 	def get_projects(self, with_users=True):
 
@@ -48,27 +51,19 @@ class ProjectFetcher(FetcherBase):
 			return projects
 
 
-class UserFetcher(FetcherBase):
-
-	def get_users(self):
-		#Users
-		users_response = self.service_api.get_users()
-		return json.loads(users_response.content)
-
 class EntryFetcher(FetcherBase):
 
-	def __init__(self):
-		self.project_service = ProjectService()
-		self.user_service = UserService()
-		self.hours_service = HoursService()
+	def __init__(self, token, tld="tangentmicroservices.com", protocol="http"):
+		self.project_service = ProjectService(token, tld, protocol)
+		self.user_service = UserService(token, tld, protocol)
+		self.hours_service = HoursService(token, tld, protocol)
 
 
 	def get_entries(self, project_id=None, user_id=None, with_users=True, with_projects=True, with_tasks=True):
 
 		users = json.loads(self.user_service.get_users().content)
 		projects = json.loads(self.project_service.get_projects().content)		
-		entries = json.loads(self.hours_service.get_entries().content)
-		import pdb;pdb.set_trace()
+		entries = json.loads(self.hours_service.get_entries().content)		
 		tasks = json.loads(self.project_service.get_tasks().content)
 
 		if with_users:

@@ -10,24 +10,21 @@ class ProjectServiceTestCase(unittest.TestCase):
 
 	def setUp(self):
 		self.service = ProjectService(tld=testing_tld)
+		response = self.service.authenticate(username=testing_admin_username, password=testing_admin_password)
+		self.service.login(response)
 
 	def test_get_projects(self):
 
 		projects = self.service.get_projects()		
 		assert projects.status_code == 200, 'Expect 200 OK'
 
-	def test_login(self):		
-
-		assert self.service.token is None, 'Expect token to be none to start with'
-		response = self.service.login(username=testing_admin_username, password=testing_admin_password)
-		
-		assert response.status_code == 200, 'Expect 200 OK'
-		assert self.service.token is not None, 'Token should be set'
-
+	
 class HoursServiceTestCase(unittest.TestCase):
 
 	def setUp(self):
 		self.service = HoursService(tld=testing_tld)
+		response = self.service.authenticate(username=testing_admin_username, password=testing_admin_password)
+		self.service.login(response)
 
 		data={
 		    "user": 10,
@@ -96,10 +93,10 @@ class UserServiceTestCase(unittest.TestCase):
 	def test_login(self):		
 
 		assert self.service.token is None, 'Expect token to be none to start with'
-		response = self.service.login(username=testing_admin_username, password=testing_admin_password)
+		response = self.service.authenticate(username=testing_admin_username, password=testing_admin_password)
 
 		assert response.status_code == 200, 'Expect 200 OK'
-		assert self.service.token is not None, 'Token should be set'
+		
 
 	"""
 	def test_get_users(self):
@@ -111,7 +108,11 @@ class UserServiceTestCase(unittest.TestCase):
 class EntryFetcherTestCase(unittest.TestCase):
 
 	def setUp(self):
-		self.fetcher = EntryFetcher()
+		user_service = UserService(tld=testing_tld)
+		response = user_service.authenticate(username=testing_admin_username, password=testing_admin_password)
+		is_logged_in, token = user_service.login(response)
+		
+		self.fetcher = EntryFetcher(token=token, tld=testing_tld)
 
 	def test_get_entries(self):
 		entries = self.fetcher.get_entries()		

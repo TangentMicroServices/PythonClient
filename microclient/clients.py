@@ -80,16 +80,19 @@ class ServiceBase(object):
 
     def authenticate(self, username, password):
         userservice = UserService(tld=self.tld, protocol=self.protocol)
-        return userservice.login(username, password)
+        return userservice.authenticate(username, password)
 
     def login(self, userservice_response):
 
+        is_logged_in = False
+
         if userservice_response.status_code == 200:
             self.token = userservice_response.json().get("token")
-            return True
+            is_logged_in = True
         else:
             self.token = None
-            return False
+        
+        return (is_logged_in, self.token)
 
     def as_json(self, response):
     	return json.loads(response.content)

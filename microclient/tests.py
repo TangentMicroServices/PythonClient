@@ -59,10 +59,11 @@ class ServiceBaseTestCase(unittest.TestCase):
 				}
 
 		service = ServiceBase('SomeService', tld='example.com')
-		response = service.login(MockResponse())
+		is_logged_in, token = service.login(MockResponse())
 
-		assert response == True, 'Expect response to be true'
+		assert is_logged_in == True, 'Expect response to be true'
 		assert service.token == "123"
+		assert service.token == token
 
 	def test_login_failure(self):
 
@@ -70,15 +71,15 @@ class ServiceBaseTestCase(unittest.TestCase):
 			status_code = 405
 			def json(self):
 				return {
-					"token": "123"
+					"errpr": "some error"
 				}
 
 		service = ServiceBase('SomeService', tld='example.com')
-		response = service.login(MockResponse())
+		is_logged_in, token = service.login(MockResponse())
 
-		assert service.token == None, 'Clear the token if login fails'
-		assert response == False, 'Not logged in'
-
+		assert service.token is None, 'Clear the token if login fails'
+		assert token is None, 'Token is none'
+		assert is_logged_in == False, 'Not logged in'
 	
 	@unittest.skip("Not yet in use, can't work out how to magically pass the resource in")
 	def test_init_creates_fluent_methods(self):
@@ -216,20 +217,4 @@ class BaseFetcherTestCase(unittest.TestCase):
 		]
 
 		print self.fetcher.create_index(test_data, "id")
-
-
-
-
-
-class ProjectFetcherTestCase(unittest.TestCase):
-
-	def setUp(self):
-		pass 
-
-	def test_project_fetcher_init(self):
-
-		fetcher = ProjectFetcher()			
-		#assert getattr(fetcher, 'service_api', None) is not None,\
-		#			'Expect service_api to be globally defined on the object'
-
 
