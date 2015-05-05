@@ -216,5 +216,5 @@ class BaseFetcherTestCase(unittest.TestCase):
 			{"id": 3, "text": "c"},
 		]
 
-		print self.fetcher.create_index(test_data, "id")
+		self.fetcher.create_index(test_data, "id")
 
