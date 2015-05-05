@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/TangentMicroServices/PythonClient.svg?branch=master)](https://travis-ci.org/TangentMicroServices/PythonClient)
+
+
 # PythonClient
 A python client for interacting with the MicroServices
 
