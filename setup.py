@@ -6,7 +6,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='microclient',
-    version='0.1.0',
+    version='0.1.5',
     author=u'Tangent Solutions',
     author_email='admin@tangentsolutions.co.za',
     packages=['microclient'],
