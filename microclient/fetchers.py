@@ -60,11 +60,11 @@ class EntryFetcher(FetcherBase):
         self.hours_service = HoursService(token, tld, protocol)
 
 
-    def get_entries(self, project_id=None, user_id=None, with_users=True, with_projects=True, with_tasks=True):
-
+    def get_entries(self, filter_params=None, with_users=True, with_projects=True, with_tasks=True):
+        
         users = json.loads(self.user_service.get_users().content)
         projects = json.loads(self.project_service.get_projects().content)      
-        entries = json.loads(self.hours_service.get_entries().content)      
+        entries = json.loads(self.hours_service.get_entries(filter_params=filter_params).content)      
         tasks = json.loads(self.project_service.get_tasks().content)
 
         if with_users:

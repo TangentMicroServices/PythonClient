@@ -54,6 +54,16 @@ service_definitions = {
                 "optional_params": []
             }
         }
+    },
+    "AnalyticsService": {
+        #"base": settings.ANALYTICSSERVICE_BASE_URL,
+        "resources": {
+            "entry": {
+                "endpoint": "/entry/",
+                "required_params": [],
+                "optional_params": []
+            }
+        }
     }
 
 }
@@ -72,7 +82,7 @@ class ServiceBase(object):
         self.service_name = service_name
         # self._make_api(service_name)
 
-    def call(self, path, data={}, method="get"):
+    def call(self, path, data={}, params=None, method="get"):
 
         url = self._get_url(path)
 
@@ -86,7 +96,7 @@ class ServiceBase(object):
 
         http_method = getattr(requests, method)
 
-        return http_method(url, data=json.dumps(data), headers=headers)
+        return http_method(url, data=json.dumps(data), params=params, headers=headers)
 
     def authenticate(self, username, password):
         userservice = UserService(tld=self.tld, protocol=self.protocol)
@@ -126,14 +136,14 @@ class ServiceBase(object):
 
         service_def, resource_def, path = self._get_service_information(
             resource)
-        return self.call(path)
+        return self.call(path=path)
 
     def get(self, resource, resource_id):
         service_def, resource_def, path = self._get_service_information(
             resource)
 
         get_path = "{0}{1}/" . format(path, resource_id)
-        return self.call(get_path)
+        return self.call(path=get_path)
 
     def create(self, resource, data):
         '''
@@ -144,7 +154,7 @@ class ServiceBase(object):
             resource)
         self._validate(resource, data)
 
-        return self.call(path, data, 'post')
+        return self.call(path=path, data=data, method='post')
 
     def update(self, resource, resource_id, data):
         '''
@@ -154,7 +164,7 @@ class ServiceBase(object):
             resource)
 
         update_path = "{0}{1}/" . format(path, resource_id)
-        return self.call(update_path, data, 'patch')
+        return self.call(path=update_path, data=data, method='patch')
 
     def delete(self, resource, resource_id):
         '''
@@ -164,7 +174,7 @@ class ServiceBase(object):
         service_def, resource_def, path = self._get_service_information(
             resource)
         delete_path = "{0}{1}/" . format(path, resource_id)
-        return self.call(delete_path, method="delete")
+        return self.call(path=delete_path, method="delete")
 
     def _make_api(self, service_name):
         '''
@@ -254,15 +264,11 @@ class HoursService(ServiceBase):
     def as_json(self, response):
         return json.loads(response.content)
 
-    def get_entries(self, project_id=None, user_id=None):
+    def get_entries(self, filter_params=None):
 
         path = '/entry/'
 
-        if(user_id or project_id):
-            path = "{0}?user={1}&project_id={2}" .format(
-                path, user_id, project_id)
-
-        return self.call(path)
+        return self.call(path=path, params=filter_params)
 
     def get_overview(self):
         return self.call(self.service_name, '/entry/overview/')
@@ -289,3 +295,23 @@ class UserService(ServiceBase):
 
     def get_users(self):
         return self.list('user')
+
+class AnalyticsService(ServiceBase):
+
+    def __init__(self, token=None, tld="tangentmicroservices.com", protocol="http"):
+
+        super(AnalyticsService, self).__init__(
+            'AnalyticsService', token, tld, protocol)
+
+    def as_json(self, response):
+        return json.loads(response.content)
+
+    def get_entries(self, project_id=None, user_id=None):
+
+        path = '/entry/'
+
+        if(user_id or project_id):
+            path = "{0}?user={1}&project_id={2}" .format(
+                path, user_id, project_id)
+
+        return self.call(path)

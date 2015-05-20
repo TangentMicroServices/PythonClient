@@ -31,7 +31,11 @@ Target Pythons is: 2.7, 3.4
 
 **Run the integration tests**
 
-	nosetests microclient/integration_ITCase.py
+	nosetests microclient/integration_ITCase.py -s
+
+**Run specific test case**
+
+    nosetests microclient/integration_ITCase.py:EntryFetcherTestCase.test_get_entries -s
 
 # Clients
 

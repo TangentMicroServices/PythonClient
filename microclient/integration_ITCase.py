@@ -1,5 +1,5 @@
 from microclient.fetchers import ProjectFetcher, EntryFetcher
-from microclient.clients import ProjectService, UserService, HoursService
+from microclient.clients import ProjectService, UserService, HoursService, AnalyticsService
 import json, unittest, uuid
 
 testing_tld = "staging.tangentmicroservices.com"
@@ -185,17 +185,56 @@ class UserServiceTestCase(unittest.TestCase):
 		assert users.status_code == 200, 'Expect 200 OK'
 	"""
 
+
+class AnalyticsServiceTestCase(unittest.TestCase):
+
+	def setUp(self):
+		self.service = AnalyticsService(tld=testing_tld)
+		response = self.service.authenticate(username=testing_admin_username, password=testing_admin_password)
+		self.service.login(response)
+
+	def test_get_entries(self):
+
+		entries = self.service.get_entries()
+
+		assert entries.status_code == 200, 'Expect 200 OK'
+
+
 class EntryFetcherTestCase(unittest.TestCase):
 
 	def setUp(self):
+		self.service = HoursService(tld=testing_tld)
+		response = self.service.authenticate(username=testing_admin_username, password=testing_admin_password)
+		self.service.login(response)
+
+		data={
+		    "user": 99,
+		    "project_id": 0,
+		    "project_task_id": 99,
+		    "status": "Open",
+		    "day": "2015-04-27",
+		    "comments": "Tangent Solutions is a great place to work",
+		    "hours": "5.00"		    
+		}
+
+		response = self.service.create("entry", data)		
+		self.entry = response.json()
+
 		user_service = UserService(tld=testing_tld)
 		response = user_service.authenticate(username=testing_admin_username, password=testing_admin_password)
 		is_logged_in, token = user_service.login(response)
 		
 		self.fetcher = EntryFetcher(token=token, tld=testing_tld)
+		
+
+	def tearDown(self):
+		entry_id = self.entry.get("id")
+		self.service.delete("entry", entry_id)
+
 
 	def test_get_entries(self):
-		entries = self.fetcher.get_entries()		
+		entries = self.fetcher.get_entries()	
+		
 		entry = entries[0]
 
 		expected_fields = [
@@ -213,6 +252,15 @@ class EntryFetcherTestCase(unittest.TestCase):
 			assert entry.get(field, None) is not None, \
 				'Expect field to be added to data'
 
+	def test_get_entries_by_user(self):
+
+		filter_params = {'user': 99}
+		entries = self.fetcher.get_entries(filter_params=filter_params)	
+
+		assert len(entries) == 1, "Search by user returned 1 result"
+		
+
+
 class ProjectFetcherTestCase(unittest.TestCase):
 
 	def setUp(self):
@@ -223,4 +271,6 @@ class ProjectFetcherTestCase(unittest.TestCase):
 	def test_get_projects(self):
 		projects = self.fetcher.get_projects()		
 		print projects
+
+
 	
