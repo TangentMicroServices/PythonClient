@@ -121,7 +121,7 @@ class ServiceBaseTestCase(unittest.TestCase):
         service = ServiceBase('ProjectService', 'token:123')
         service.list("project")
 
-        mock_call.assert_called_with('/projects/')
+        mock_call.assert_called_with(path='/projects/')
 
     @patch.object(ServiceBase, 'call')
     def test_get(self, mock_call):
@@ -129,7 +129,7 @@ class ServiceBaseTestCase(unittest.TestCase):
         service = ServiceBase('ProjectService', 'token:123')
         service.get("project", 1)
 
-        mock_call.assert_called_with('/projects/1/')
+        mock_call.assert_called_with(path='/projects/1/')
 
     @patch.object(ServiceBase, 'call')
     def test_create(self, mock_call):
@@ -140,7 +140,7 @@ class ServiceBaseTestCase(unittest.TestCase):
             service = ServiceBase('FooService', 'token:123')
             service.create("someresource", mock_data)
 
-        mock_call.assert_called_with('/someresource/', mock_data, 'post')
+        mock_call.assert_called_with(path='/someresource/', data=mock_data, method='post')
 
     @patch.object(ServiceBase, 'call')
     def test_create_will_raise_error_if_required_params_are_missing(self, mock_call):
@@ -161,7 +161,7 @@ class ServiceBaseTestCase(unittest.TestCase):
             service = ServiceBase('FooService', 'token:123')
             service.update("someresource", 1, mock_data)
 
-        mock_call.assert_called_with('/someresource/1/', mock_data, 'patch')
+        mock_call.assert_called_with(path='/someresource/1/', data=mock_data, method='patch')
 
     @patch.object(ServiceBase, 'call')
     def test_delete(self, mock_call):
@@ -170,7 +170,7 @@ class ServiceBaseTestCase(unittest.TestCase):
             service = ServiceBase('FooService', 'token:123')
             service.delete("someresource", 1)
 
-        mock_call.assert_called_with('/someresource/1/', method='delete')
+        mock_call.assert_called_with(path='/someresource/1/', method='delete')
         
 
 class ProjectServiceTestCase(unittest.TestCase):
@@ -187,7 +187,7 @@ class ProjectServiceTestCase(unittest.TestCase):
     def test_get_project_resources(self, mock_call):
 
         self.service.get("resource", 1)
-        mock_call.assert_called_with('/resources/1/')
+        mock_call.assert_called_with(path='/resources/1/')
 
         
 class HoursServiceTestCase(unittest.TestCase):
