@@ -136,7 +136,7 @@ class ServiceBase(object):
 
         service_def, resource_def, path = self._get_service_information(
             resource)
-        return self.call(path=path, filter_params=filter_params)
+        return self.call(path=path, params=filter_params)
 
     def get(self, resource, resource_id):
         service_def, resource_def, path = self._get_service_information(
