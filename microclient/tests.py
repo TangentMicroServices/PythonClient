@@ -121,7 +121,7 @@ class ServiceBaseTestCase(unittest.TestCase):
         service = ServiceBase('ProjectService', 'token:123')
         service.list("project")
 
-        mock_call.assert_called_with(path='/projects/')
+        mock_call.assert_called_with(path='/projects/', filter_params=None)
 
     @patch.object(ServiceBase, 'call')
     def test_get(self, mock_call):
@@ -188,6 +188,14 @@ class ProjectServiceTestCase(unittest.TestCase):
 
         self.service.get("resource", 1)
         mock_call.assert_called_with(path='/resources/1/')
+
+    @patch.object(ServiceBase, 'call')
+    def test_list_projects_is_billable(self, mock_call):
+
+        filter_params = {'is_billable': False}
+
+        self.service.list("project", filter_params=filter_params)
+        mock_call.assert_called_with(path='/projects/', filter_params={'is_billable': False})
 
         
 class HoursServiceTestCase(unittest.TestCase):

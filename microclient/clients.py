@@ -132,11 +132,11 @@ class ServiceBase(object):
         print ("Optional parameters" . format (resource_def.get("optional_params")))
         
 
-    def list(self, resource):
+    def list(self, resource, filter_params=None):
 
         service_def, resource_def, path = self._get_service_information(
             resource)
-        return self.call(path=path)
+        return self.call(path=path, filter_params=filter_params)
 
     def get(self, resource, resource_id):
         service_def, resource_def, path = self._get_service_information(
