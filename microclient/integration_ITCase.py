@@ -69,6 +69,17 @@ class ProjectServiceTestCase(unittest.TestCase):
 		projects = self.service.get_projects()		
 		assert projects.status_code == 200, 'Expect 200 OK'
 
+	def test_get_active_projects(self):
+
+		filter_params = {}
+		filter_params['is_active'] = "True"
+		projects = self.service.list("project", filter_params=filter_params)
+		
+		assert projects.status_code == 200, 'Expect 200 OK'
+
+		for project in projects.json():
+			assert project['is_active'] == True
+
 	def test_crud_project(self):
 		"""
 		TODO: refactor into do_crud
